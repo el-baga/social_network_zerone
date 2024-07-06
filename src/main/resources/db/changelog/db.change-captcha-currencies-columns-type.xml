@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="0" author="admin">
+
+    </changeSet>
+    <changeSet id="1703256365008-1" author="sts">
+        <modifyDataType tableName="captcha" columnName="time" newDataType="timestamp(6)"/>
+        <modifyDataType tableName="currencies" columnName="update_time" newDataType="timestamp(6)"/>
+    </changeSet>
+
+</databaseChangeLog>

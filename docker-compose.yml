@@ -1,0 +1,47 @@
+version: '3.9'
+
+name: zerone
+services:
+  front:
+    container_name: server_front
+    image: romashok31/skillbox-front:front-local
+    ports:
+      - "8080:80"
+
+  psql:
+    container_name: server_psql
+    image: postgres:15.4
+    ports:
+      - "5432:5432"
+    restart: on-failure
+    environment:
+      POSTGRES_USER: zerone_user
+      POSTGRES_PASSWORD: zerone_password
+      POSTGRES_DB: zerone_db
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LOG4j_LOGGER: "kafka.controller=INFO, kafka.producer.async.Default=INFO, state.change.logger=INFO"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPIC_ENABLE: 'true'
+
+volumes:
+  database-data:

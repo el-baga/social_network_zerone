@@ -1,0 +1,82 @@
+stages:
+  - compile
+  - test
+  - sonar
+  - package
+  - deploy
+
+cache:
+  paths:
+    - ./.m2/repository
+  key: "$CI_BUILD_REF_NAME"
+
+variables:
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=./.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+
+.maven-jobs:
+  tags:
+    - zerone45
+  artifacts:
+    expire_in: 1 week
+  before_script:
+    - mvn clean
+
+compile-job:
+  extends: .maven-jobs
+  stage: compile
+  only:
+    refs:
+      - merge_requests
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+
+test-job:
+  extends: .maven-jobs
+  stage: test
+  only:
+    refs:
+      - merge_requests
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+
+sonar-job:
+  extends: .maven-jobs
+  stage: sonar
+  only:
+    refs:
+      - merge_requests
+  script:
+    - mvn -X verify sonar:sonar -Dsonar.java.binaries=target -Dsonar.login=admin -Dsonar.password=E548620w
+
+package-job:
+  extends: .maven-jobs
+  stage: package
+  only:
+    - dev
+  script:
+    - mvn $MAVEN_CLI_OPTS package -Dmaven.test.skip=true
+    - scp target/*.jar /opt/zerone/build/zerone.jar
+  artifacts:
+    paths:
+      - target/*.jar
+
+deploy-job:
+  extends: .maven-jobs
+  stage: deploy
+  only:
+    - dev
+  script:
+    - cat ${ENV_FILE}
+    - (docker ps -a --format {{.Names}} | grep zerone-backend -w) && docker stop zerone-backend && docker rm zerone-backend || echo "zerone-backend не существует"
+    - docker build -t zerone-backend:latest /opt/zerone/build
+    - docker run --name zerone-backend -d -v /opt/zerone/logs:/app/logs -p 8086:8086 --env-file ${ENV_FILE} -t zerone-backend:latest
+    - rm -rf ./*

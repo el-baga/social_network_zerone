@@ -1,0 +1,126 @@
+server:
+  port: 8086
+
+spring:
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+  mail:
+    host: smtp.mail.ru
+    password: ${SMTP_TOKEN:token}
+    port: 587
+    login: zerone45.helper@mail.ru
+    personal: Support
+  base-url: ${BASE_URL:http://localhost:8080}
+  datasource:
+    url: jdbc:postgresql://${PG_HOST:localhost:5432}/zerone_db
+    username: ${PG_USER:zerone_user}
+    password: ${PG_PASSWORD:zerone_password}
+    driver-class-name: org.postgresql.Driver
+
+  output:
+    ansi:
+      enabled: always
+
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+
+  liquibase:
+    enabled: ${LB_ENABLED:on}
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+
+log4j2:
+  Script:
+    enableLanguages: groovy
+
+jwt:
+  lifetime: 3600000
+  secret: ${JWT_TOKEN:egret6furthermore7overthrew66u7i8entrant79800pp0lg8}
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+        orm:
+          jdbc:
+            bind: trace
+        type:
+          descriptor:
+            sql:
+              BasicBinder: trace
+  file:
+    path: ${LOG_PATH:logs}
+    name: ${LOG_FILE:AppLog}
+  controller:
+    enable: ${LOG_CONTROLLER_ENABLE:true}
+  service:
+    enable: ${LOG_SERVICE_ENABLE:true}
+  remote-store: ${LOG_REMOTE_STORE_ENABLE:false}
+  log-storage:
+    token:
+      yandex: ${LOG_TOKEN_YANDEX:111}
+
+
+allowed-origins: ${CORS:http://localhost:8080}
+
+matchers: ${MATCHERS:/api/v1/auth/login,/api/v1/auth/captcha,/api/v1/account/register,/api/v1/ws/**,api/v1/account/password/recovery,/api/v1/account/email,/api/v1/account/password/reset}
+
+scheduler:
+  enable: ${SCHEDULER_ENABLE:true}
+  captcha-clear: ${CAPTCHA_CLEAR_CRON:0 */5 * * * *}
+  post-delete: ${POST_DELETE_CRON:0 */5 * * * *}
+  comment-delete: ${COMMENT_DELETE_CRON:0 */5 * * * *}
+  log-upload: ${LOG_UPLOAD_STORAGE:0 10 0 * * *}
+  birth-day-notify: ${BIRTH_DAY_NOTIFY:0 2 0 * * *}
+  notify-clear: ${NOTIFY_CLEAR:0 0 */3 * * * }
+  messages-clear: ${MESSAGES_CLEAR:0 */5 * * * *}
+  account-delete: ${ACC_DELETE_CRON:0 0 0 * * ?}
+  get-currency: ${GET_CURRENCY_CRON:0 40 11 * * *}
+  get-weather: ${GET_WEATHER_CRON:0 */30 * * * *}
+
+
+vk:
+  id: ${VK_ID:0}
+  token: ${VK_TOKEN:token}
+
+dropbox:
+  access-token: ${DROPBOX_ACCESS:access}
+  app-key: ${DROPBOX_APP:app}
+  refresh-token: ${DROPBOX_REFRESH:refresh}
+  secret-key: ${DROPBOX_SECRET:secret}
+  folder: /storage-controller/
+
+default:
+  image: https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg
+
+weather:
+  app:
+    key: ${WEATHER_API_KEY:key}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+springdoc:
+  api-docs:
+    path: /api/doc
+
+app:
+  kafka:
+    kafkaMessageTopicBot: "message-topic-bot"
+    kafkaMessageTopicEmail: "message-topic-email"
+    kafkaMessageTopicPassword: "message-topic-password"
+    kafkaMessageGroupId: "kafka-message-group-id"

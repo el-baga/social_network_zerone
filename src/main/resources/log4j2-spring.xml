@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_EXCEPTION_CONVERSION_WORD">%xwEx</Property>
+        <Property name="LOG_LEVEL_PATTERN">%5p</Property>
+        <Property name="LOG_DATEFORMAT_PATTERN">yyyy-MM-dd HH:mm:ss.SSS</Property>
+        <Property name="LOG_PATTERN">%clr{%d{${sys:LOG_DATEFORMAT_PATTERN}}}{faint} %clr{${sys:LOG_LEVEL_PATTERN}} %clr{%pid}{magenta} %clr{---}{faint} %clr{${sys:LOGGED_APPLICATION_NAME:-}[%15.15t]}{faint} %clr{${sys:LOG_CORRELATION_PATTERN:-}}{faint}%clr{%-40.40c{1.}}{cyan} %clr{:}{faint} %m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property>
+        <Property name="FILE_LOG_PATTERN">%d{${sys:LOG_DATEFORMAT_PATTERN}} %highlight{${sys:LOG_LEVEL_PATTERN}} %pid --- ${sys:LOGGED_APPLICATION_NAME:-}[%t] ${sys:LOG_CORRELATION_PATTERN:-}%-40.40c{1.} : %m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="AppLog"
+                     fileName="${spring:logging.file.path}/${spring:logging.file.name}.log"
+                     filePattern="${spring:logging.file.path}/archive/$${date:yyyy-MM-dd}/logfile-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%mask{${FILE_LOG_PATTERN}}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="30MB"/>
+                <CronTriggeringPolicy schedule="0 50 23 * * ?"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${spring:logging.file.path}/archive" maxDepth="2">
+                    <ifFileName glob="*/logfile-*.log.gz"/>
+                    <IfLastModified age="P10D"/>
+                </Delete>
+                <Delete basePath="${spring:logging.file.path}/archive" maxDepth="2">
+                    <ScriptCondition>
+                        <Script name="GroovyCondition" language="groovy"><![CDATA[
+                        import java.nio.file.*
+                        import java.nio.file.attribute.BasicFileAttributes;
+                        import org.apache.logging.log4j.core.appender.rolling.action.PathWithAttributes;
+
+                        statusLogger.warn 'SCRIPT: Run groovy script'
+                        List<PathWithAttributes> result = new ArrayList<PathWithAttributes>();
+                        String path = basePath;
+                        Files.walk(Paths.get(path)).filter { Files.isDirectory(it) }.forEach { folder ->
+                            if (Files.list(folder).count() == 0) {
+                                    statusLogger.warn 'SCRIPT: Returning empty folder for deletion: ' + folder
+                                    BasicFileAttributes attributes = Files.readAttributes(folder, BasicFileAttributes.class);
+                                    result.add(new PathWithAttributes(folder, attributes));
+                            }
+                        }
+                        return result;
+                        ]]>
+                        </Script>
+                    </ScriptCondition>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <Logger name="com.skillbox.zerone" level="debug" additivity="true">
+            <AppenderRef ref="AppLog"/>
+        </Logger>
+<!--        <Logger name="org.hibernate" level="OFF" additivity="false">-->
+<!--        </Logger>-->
+    </Loggers>
+
+    <CustomConverters>
+        <Converter name="mask" class="com.skillbox.zerone.aop.MaskingConverter"/>
+    </CustomConverters>
+</Configuration>

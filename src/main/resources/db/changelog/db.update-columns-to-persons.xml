@@ -1,0 +1,14 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="956771023" author="Bogdan">
+        <addColumn tableName="persons">
+            <column name="email_uuid_time" type="timestamp(6) without time zone"/>
+        </addColumn>
+        <addColumn tableName="persons">
+            <column name="change_password_token_time" type="timestamp(6) without time zone"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

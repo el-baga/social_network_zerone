@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="1703102072235-1" author="sts">
+        <sqlFile path="sql/schema.sql" relativeToChangelogFile="true"/>
+    </changeSet>
+
+    <changeSet id="1703102137120-1" author="sts">
+        <tagDatabase tag="initial-state"/>
+    </changeSet>
+
+    <include file="db.change-captcha-currencies-columns-type.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="1703256681271-1" author="sts">
+        <tagDatabase tag="change-captcha-currencies-columns-type"/>
+    </changeSet>
+
+    <include file="db.add-columns-to-comments.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="1703256686271-4" author="Yaman">
+        <tagDatabase tag="add-columns-to-comments"/>
+    </changeSet>
+
+    <include file="db.insert-countries.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="1703256777555" author="Oxana">
+        <tagDatabase tag="insert-countries"/>
+    </changeSet>
+
+    <include file="db.add-columns-to-persons.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="1703256114739" author="Bogdan">
+        <tagDatabase tag="add-columns-to-persons"/>
+    </changeSet>
+
+    <include file="db.update-countries.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="17032565464575" author="Oxana">
+        <tagDatabase tag="update-countries"/>
+    </changeSet>
+
+    <include file="db.update-columns-to-persons.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="1703259978845" author="Bogdan">
+        <tagDatabase tag="update-columns-to-persons"/>
+    </changeSet>
+
+</databaseChangeLog>
