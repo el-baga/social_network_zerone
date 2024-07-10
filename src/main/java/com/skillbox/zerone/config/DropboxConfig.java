@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DropboxConfig {
+
     @Value("${dropbox.access-token}")
     private String accessToken;
 
@@ -21,6 +22,7 @@ public class DropboxConfig {
     @Value("${dropbox.secret-key}")
     private String secretKey;
 
+    // для подключения к Dropbox контейнеру через DbxCredential необходимо было получить предоставленные ниже токены и ключи
     @Bean
     public DbxClientV2 dbxClientV2() {
         DbxRequestConfig config = DbxRequestConfig.newBuilder("zerone_app").build();

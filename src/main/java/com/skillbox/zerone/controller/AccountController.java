@@ -53,12 +53,14 @@ public class AccountController {
         return notificationService.setSetting(req);
     }
 
+    // после получения письма пользователь через почту меняет почту и отправляет его сюда с токеном
     @EndpointDescription(summary = "Set email")
     @PutMapping(value = "/email", produces = MediaType.APPLICATION_JSON_VALUE)
     public RegisterRs setPersonEmail(@RequestBody EmailRq emailRq) {
         return personService.setPersonEmail(emailRq);
     }
 
+    // На сайте пользователь нажимает на кнопку восстановления пароля и сюда приходит его почта для отправки на нее письмо
     @EndpointDescription(summary = "Change email")
     @PutMapping(value = "/email/recovery")
     public Long changePersonEmail(@RequestBody String personEmail) {
@@ -66,17 +68,20 @@ public class AccountController {
                 .userId(CommonUtil.getCurrentUserId()).build());
         return System.currentTimeMillis();
     }
-    
+
+    // На сайте есть функция изменения пароля
     @PutMapping("/password/set")
     public RegisterRs setPersonPassword(@RequestBody PasswordSetRq passwordSetRq) {
         return personService.setPersonPassword(passwordSetRq);
     }
 
+    // после получения письма пользователь через почту меняет пароль и отправляет его сюда с токеном
     @PutMapping("/password/reset")
     public RegisterRs resetPersonPassword(@RequestBody PasswordResetRq passwordResetRq) {
         return personService.resetPersonPassword(passwordResetRq);
     }
 
+    // На сайте пользователь нажимает на кнопку восстановления пароля и сюда приходит его почта для отправки на нее письмо
     @PutMapping("/password/recovery")
     public Long recoverPersonPassword(@RequestBody PasswordRecoveryRq passwordRecoveryRq) {
         kafkaTemplate.send(topicNamePassword, KafkaMessage.builder().message(passwordRecoveryRq.getEmail())

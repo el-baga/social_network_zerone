@@ -12,7 +12,7 @@ spring:
     personal: Support
   base-url: ${BASE_URL:http://localhost:8080}
   datasource:
-    url: jdbc:postgresql://${PG_HOST:localhost:5432}/zerone_db
+    url: jdbc:postgresql://${PG_HOST:localhost:5432}/social_network_zerone
     username: ${PG_USER:zerone_user}
     password: ${PG_PASSWORD:zerone_password}
     driver-class-name: org.postgresql.Driver

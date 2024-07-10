@@ -21,6 +21,8 @@ public class EmailConfig {
 
     @Value("${spring.mail.password}")
     private String password;
+
+    // Подключение к созданной почте-поддержки и последующее взаимодействие с ней необходимо указать хост, порт, логин и пароль
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();

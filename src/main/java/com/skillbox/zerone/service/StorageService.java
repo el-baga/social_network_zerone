@@ -36,6 +36,11 @@ public class StorageService {
 
     private final StorageMapper storageMapper;
 
+    // здесь происходит следующее:
+    // 1) загрузка фото в Dropbox хранилище
+    // 2) получение публичной ссылки для сохранения ее в БД и выведения аватарки на сайте
+    // 3) при смене старое фото удаляется из хранилище, а из БД обновляется на свежую ссылку фото
+
     @Transactional
     public PageRs<Storage> uploadImage(String type, MultipartFile file) {
         String fileName = storageControllerFolder + System.currentTimeMillis() + file.getOriginalFilename();

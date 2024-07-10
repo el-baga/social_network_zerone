@@ -134,17 +134,18 @@ public class PersonService {
         Person person = getPersonById(id);
         PersonRs personRs = PersonMapper.INSTANCE.toDto(person);
         personRs.setFriendStatus(FriendshipStatus.UNKNOWN.name());
-        personRs.setUserDeleted(person.getIsDeleted());
-        personRs.setMessagePermission("ALL");
-        personRs.setCurrency(createCurrencyRs());
+        personRs.setUserDeleted(person.getIsDeleted()); // true - информация не выведется
+        personRs.setMessagePermission("ALL"); // кто может отправлять пользователю сообщения
+        personRs.setCurrency(createCurrencyRs()); // вывод курса валют
         if (person.getCity() != null && weatherService.getWeather(personRs.getCity()) != null) {
-            personRs.setWeather(createWeatherRs(person.getCity()));
+            personRs.setWeather(createWeatherRs(person.getCity())); // если город выбран, то выводится и погода по нему
         }
         return PageRs.<PersonRs>builder()
                 .data(personRs)
                 .build();
     }
 
+    // получение курса валют из ЦБ РФ и обновляется планировщиком каждый день в 11:40 (package: scheduler)
     private CurrencyRs createCurrencyRs() {
         CurrencyRs currencyRs = new CurrencyRs();
         currencyRs.setEuro(currencyService.getCurrency("Евро"));
@@ -152,6 +153,7 @@ public class PersonService {
         return currencyRs;
     }
 
+    // получение погоды из Open Weather Map и обновление раз в 30 минут (package: scheduler) или же при смене города
     public WeatherRs createWeatherRs(String city) {
         Weather weather = weatherService.getWeather(city);
         return WeatherMapper.INSTANCE.weatherToWeatherDTO(weather);
@@ -211,12 +213,13 @@ public class PersonService {
                 .build();
     }
 
+    // Посредством mapstruct происходит перенос введенных данных PersonRq в Person, полученный из БД
     @Transactional
     public PageRs<PersonRs> updateUserInfo(PersonRq personRq) {
         Long id = CommonUtil.getCurrentUserId();
         Person person = getPersonById(id);
         Person updatedPerson = PersonMapper.INSTANCE.toEntity(personRq, person);
-        geolocationService.addCityToDb(personRq);
+        geolocationService.addCityToDb(personRq); // получение города по выбранной стране происходит при помощи интеграции с VK API
         updatePerson(updatedPerson);
         if (personRq.getCity() != null) {
             weatherService.getWeatherData(personRq.getCity());
@@ -232,7 +235,7 @@ public class PersonService {
         Person srcPerson = getPersonById(srcId);
         Person dstPerson = getPersonById(dstId);
         PersonRs personRs = PersonMapper.INSTANCE.toDto(dstPerson);
-        String status = getFriendshipsStatus(dstId, srcPerson);
+        String status = getFriendshipsStatus(dstId, srcPerson); // установка текущего статуса дружбы между пользователями
         personRs.setFriendStatus(status);
         return PageRs.<PersonRs>builder()
                 .data(personRs)
@@ -260,6 +263,7 @@ public class PersonService {
         return status;
     }
 
+    // генерация письма восстановления
     public void changePersonEmail(String personEmail, Long userId) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -270,12 +274,13 @@ public class PersonService {
             String link = getEmailResetLink(userId);
             String content = getEmailResetContent(link);
             messageHelper.setText(content, true);
-            javaMailSender.send(message);
+            javaMailSender.send(message); // отправка письма на почту пользователя
         } catch (MessagingException | UnsupportedEncodingException e) {
             throw new BadRequestException("Something went wrong with sending email recovery letter on email.");
         }
     }
 
+    // создание ссылки восстановления и сохранения токена в БД для последующей идентификации пользователя
     private String getEmailResetLink(Long id) {
         Person person = getPersonById(id);
         String code = UUID.randomUUID().toString();
@@ -285,6 +290,7 @@ public class PersonService {
         return String.format(MessageType.RESET_EMAIL_FORMAT_LINK.getText(), baseUrl, code);
     }
 
+    // текст письма
     private String getEmailResetContent(String link) {
         return "<p>Здравствуйте,</p>"
                 + "<p>С вашего аккаунта был отправлен запрос на изменение текущей почты. </p>"
@@ -294,6 +300,7 @@ public class PersonService {
                 + "<p>Если вы не отправляли запрос на изменение почты, то проигнорируйте данное сообщение.</p>";
     }
 
+    // через почту при нажатии на сохранения новой почты данный метод получает данные и сохраняет в БД
     public RegisterRs setPersonEmail(EmailRq email) {
         Optional<Person> personOptional = personRepository.findPersonByEmailUUID(email.getSecret());
         if (personOptional.isEmpty()) {
@@ -320,6 +327,7 @@ public class PersonService {
                 .build();
     }
 
+    // установка нового пароля, введенного на сайте
     public RegisterRs setPersonPassword(PasswordSetRq passwordSetRq) {
         Long id = CommonUtil.getCurrentUserId();
         Person person = getPersonById(id);
@@ -332,8 +340,9 @@ public class PersonService {
                 .build();
     }
 
+    // через почту при нажатии на сохранения нового пароля данный метод получает данные и сохраняет в БД
     public RegisterRs resetPersonPassword(PasswordResetRq passwordResetRq) {
-        Optional<Person> personOptional = personRepository.findPersonByChangePasswordToken(passwordResetRq.getSecret());
+        Optional<Person> personOptional = personRepository.findPersonByChangePasswordToken(passwordResetRq.getSecret()); // нахождение пользователя по токену пароля
         if (personOptional.isEmpty()) {
             throw new BadRequestException(MessageType.PASSWORD_TOKEN_IS_NOT_FOUND_ERROR.getText());
         }
@@ -341,7 +350,7 @@ public class PersonService {
         Person person = personOptional.get();
         LocalDateTime changePasswordTokenTime = person.getChangePasswordTokenTime();
         LocalDateTime currentTime = LocalDateTime.now();
-        boolean isTimeDiffMoreThanTenMin = Duration.between(changePasswordTokenTime, currentTime).toMinutes() > 10L;
+        boolean isTimeDiffMoreThanTenMin = Duration.between(changePasswordTokenTime, currentTime).toMinutes() > 10L; // проверка токена на истечение срока
         if (isTimeDiffMoreThanTenMin) {
             throw new BadRequestException(MessageType.PASSWORD_TOKEN_EXPIRED_ERROR.getText());
         }
@@ -355,6 +364,7 @@ public class PersonService {
                 .build();
     }
 
+    // генерация письма восстановления
     public void recoverPersonPassword(String email, Long userId) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -365,12 +375,13 @@ public class PersonService {
             String link = getPasswordResetLink(userId);
             String content = getPasswordResetContent(link);
             messageHelper.setText(content, true);
-            javaMailSender.send(message);
+            javaMailSender.send(message); // отправка письма на почту пользователя
         } catch (MessagingException | UnsupportedEncodingException e) {
             throw new BadRequestException("Something went wrong with sending password recovery letter on email.");
         }
     }
 
+    // создание ссылки восстановления и сохранения токена в БД для последующей идентификации пользователя
     private String getPasswordResetLink(Long id) {
         Person person = getPersonById(id);
         String code = UUID.randomUUID().toString();
@@ -380,6 +391,7 @@ public class PersonService {
         return String.format(MessageType.RESET_PASSWORD_FORMAT_LINK.getText(), baseUrl, code);
     }
 
+    // текст письма
     private String getPasswordResetContent(String link) {
         return "<p>Здравствуйте,</p>"
                 + "<p>С вашего аккаунта был отправлен запрос на изменение текущего пароля. </p>"
@@ -389,6 +401,8 @@ public class PersonService {
                 + "<p>Если вы не отправляли запрос на изменение пароля, то проигнорируйте данное сообщение.</p>";
     }
 
+    // единственное, что здесь делается - это выставление true на удаление аккаунта
+    // в package: scheduler есть функция выставления 7 дней пользователю на восстановления данных, иначе из БД все удалится
     public PageRs<ComplexRs> deleteInfoAboutMe() {
         Long id = CommonUtil.getCurrentUserId();
         Person person = getPersonById(id);
@@ -401,6 +415,7 @@ public class PersonService {
     }
 
 
+    // непосредственно само восстановление аккаунта при нажатии на кнопку в разделе 'Главная'
     public PageRs<ComplexRs> recoverInfoAboutMe() {
         Long id = CommonUtil.getCurrentUserId();
         Person person = getPersonById(id);

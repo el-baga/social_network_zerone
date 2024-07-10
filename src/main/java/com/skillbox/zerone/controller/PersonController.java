@@ -28,6 +28,7 @@ public class PersonController {
     private final PersonService personService;
     private final PostService postService;
 
+    // вывод своего профиля в аккаунте
     @EndpointDescription(summary = "Get information about me")
     @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageRs<PersonRs> aboutMe() {
@@ -59,12 +60,14 @@ public class PersonController {
         return personService.searchPersons(req);
     }
 
+    // в настройках аккаунта пользователь может изменить свои данные
     @EndpointDescription(summary = "Update information about me")
     @PutMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageRs<PersonRs> updateMyInfo(@RequestBody @Valid PersonRq personRq) {
         return personService.updateUserInfo(personRq);
     }
 
+    // нахождение конкретного пользователя на сайте
     @EndpointDescription(summary = "Get user by id")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageRs<PersonRs> getPersonById(
@@ -73,12 +76,14 @@ public class PersonController {
         return personService.getPersonProfileById(id);
     }
 
+    // удаление аккаунта
     @EndpointDescription(summary = "Delete information about me")
     @DeleteMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageRs<ComplexRs> deleteInfoAboutMe() {
         return personService.deleteInfoAboutMe();
     }
 
+    // после удаления есть время на восстановление
     @EndpointDescription(summary = "Recover information about me")
     @PostMapping(value = "/me/recover", produces = MediaType.APPLICATION_JSON_VALUE)
     public PageRs<ComplexRs> recoverInfoAboutMe() {

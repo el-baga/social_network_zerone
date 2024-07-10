@@ -16,6 +16,7 @@ public class StorageController {
 
     private final StorageService storageService;
 
+    // в настройках профиля пользователь может установить свою фотографию
     @EndpointDescription(summary = "Update profile image")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public PageRs<Storage> uploadProfileImage(@RequestParam("type") String type,
